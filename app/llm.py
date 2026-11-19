@@ -77,7 +77,7 @@ class OpenRouter:
             self.models = ranked + others[:8]
         log.info("Free models in rotation: %s", self.models[:6])
 
-    def chat(self, messages: list[dict], temperature: float = 0.2, max_tokens: int = 700) -> str:
+    def chat(self, messages: list[dict], temperature: float = 0.2, max_tokens: int = 1500) -> str:
         if not self.configured:
             raise RuntimeError("OPENROUTER_API_KEY is not set")
         last_err = None
