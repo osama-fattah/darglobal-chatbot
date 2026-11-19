@@ -109,6 +109,7 @@ def status():
     return {
         **state,
         **index.stats(),
+        "status": "ready" if index.chunks else state["status"],
         "llm_configured": llm.configured,
         "models": llm.models[:5],
         "last_model": llm.last_model,

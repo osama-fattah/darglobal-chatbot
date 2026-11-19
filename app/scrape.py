@@ -85,8 +85,12 @@ def _clean(text: str) -> str:
     return text.strip()
 
 
-def _next_data_strings(soup: BeautifulSoup, limit: int = 4000) -> list[str]:
-    """Collect human-readable strings from the Next.js page payload."""
+def _next_data_strings(soup: BeautifulSoup, limit: int = 250, max_chars: int = 6000) -> list[str]:
+    """Collect human-readable strings from the page's own Next.js data (pageProps only).
+
+    Translation dictionaries and app-wide config are skipped; they repeat on every page
+    and would swamp the index.
+    """
     tag = soup.find("script", id="__NEXT_DATA__")
     if not tag or not tag.string:
         return []
@@ -97,36 +101,42 @@ def _next_data_strings(soup: BeautifulSoup, limit: int = 4000) -> list[str]:
 
     out: list[str] = []
     seen: set[str] = set()
-    skip_keys = {"buildId", "image", "images", "url", "href", "src", "icon", "slug", "id", "_id", "uuid", "token"}
+    total = 0
+    skip_keys = {"buildId", "image", "images", "url", "href", "src", "icon", "slug", "id", "_id", "uuid",
+                 "token", "seo", "meta", "schema", "breadcrumbs", "footer", "header", "menu", "navigation"}
+    skip_sub = ("i18n", "translation", "locale", "messages", "dictionary", "_next", "initialstate", "config")
 
     def walk(node, key=""):
-        if len(out) >= limit:
+        nonlocal total
+        if len(out) >= limit or total >= max_chars:
             return
         if isinstance(node, dict):
             for k, v in node.items():
-                if k in skip_keys:
+                kl = k.lower()
+                if k in skip_keys or any(x in kl for x in skip_sub):
                     continue
                 walk(v, k)
         elif isinstance(node, list):
-            for v in node:
+            for v in node[:40]:
                 walk(v, key)
         elif isinstance(node, str):
             s = BeautifulSoup(node, "lxml").get_text(" ") if "<" in node else node
             s = s.strip()
-            # keep real sentences / labels, drop ids, urls and codes
             if (
-                4 <= len(s) <= 2000
+                4 <= len(s) <= 1500
                 and " " in s
                 and not s.startswith(("http", "/", "{", "data:"))
                 and s not in seen
             ):
                 seen.add(s)
-                out.append(f"{key}: {s}" if key and len(key) < 30 else s)
+                line = f"{key}: {s}" if key and len(key) < 30 else s
+                out.append(line)
+                total += len(line)
         elif isinstance(node, (int, float)) and key and not isinstance(node, bool):
             if any(w in key.lower() for w in ("price", "area", "bed", "bath", "room", "size", "floor")):
                 out.append(f"{key}: {node}")
 
-    walk(data.get("props", {}))
+    walk(data.get("props", {}).get("pageProps", {}))
     return out
 
 

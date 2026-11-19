@@ -20,6 +20,7 @@ USER user
 # retries the scrape on startup.
 RUN python -c "from fastembed import TextEmbedding; TextEmbedding('BAAI/bge-small-en-v1.5')" || true
 RUN python -m app.scrape || true
+RUN python -m app.retrieval || true
 
 # Render and most hosts pass the port in $PORT
 ENV PORT=7860

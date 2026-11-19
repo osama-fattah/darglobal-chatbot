@@ -67,7 +67,12 @@ class OpenRouter:
             and "text" in (m.get("architecture", {}).get("output_modalities") or ["text"])
         }
         ranked = [m for m in PREFERRED if m in free]
-        others = sorted((m for m in free if m not in ranked), key=lambda m: -free[m])
+        # then well-known open model families, then anything else free
+        families = ("llama", "deepseek", "qwen", "gemma", "mistral", "gpt-oss", "nemotron", "glm", "kimi")
+        fam = [m for m in free if m not in ranked and any(f in m.lower() for f in families)
+               and not any(x in m.lower() for x in ("-vl", "vision", "embed", "guard"))]
+        fam.sort(key=lambda m: -free[m])
+        others = fam + sorted((m for m in free if m not in ranked and m not in fam), key=lambda m: -free[m])
         if ranked or others:
             self.models = ranked + others[:8]
         log.info("Free models in rotation: %s", self.models[:6])
