@@ -77,7 +77,7 @@ class OpenRouter:
             self.models = ranked + others[:8]
         log.info("Free models in rotation: %s", self.models[:6])
 
-    def chat(self, messages: list[dict], temperature: float = 0.2, max_tokens: int = 1500) -> str:
+    def chat(self, messages: list[dict], temperature: float = 0.2, max_tokens: int = 4000) -> str:
         if not self.configured:
             raise RuntimeError("OPENROUTER_API_KEY is not set")
         last_err = None
@@ -91,6 +91,8 @@ class OpenRouter:
                             "messages": messages,
                             "temperature": temperature,
                             "max_tokens": max_tokens,
+                            # reasoning models spend tokens thinking; keep it short so the answer isn't cut off
+                            "reasoning": {"effort": "low", "exclude": True},
                         },
                     )
                     if r.status_code == 429 or r.status_code >= 500:
@@ -104,9 +106,13 @@ class OpenRouter:
                     if "error" in data:
                         last_err = f"{model}: {data['error']}"
                         break
-                    content = (data["choices"][0]["message"].get("content") or "").strip()
+                    choice = data["choices"][0]
+                    content = (choice["message"].get("content") or "").strip()
                     if not content:
                         last_err = f"{model}: empty reply"
+                        break
+                    if choice.get("finish_reason") == "length" and model != self.models[-1]:
+                        last_err = f"{model}: answer cut off"
                         break
                     self.last_model = model
                     return content
