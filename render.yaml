@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: darglobal-assistant
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: REFRESH_IF_OLDER_THAN_HOURS
+        value: "24"

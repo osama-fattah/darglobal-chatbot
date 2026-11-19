@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dar Global &amp; Wasalt Assistant</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --panel: #ffffff; --ink: #1b1f24; --muted: #6b6f76;
+    --line: #e4e0d6; --accent: #1f3a5f; --accent-ink: #ffffff; --gold: #a8874a;
+    --user: #1f3a5f; --bot: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); display: flex; flex-direction: column;
+  }
+  header {
+    padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel);
+    display: flex; align-items: center; gap: 12px;
+  }
+  header .mark { width: 34px; height: 34px; border-radius: 8px; background: var(--accent);
+    color: #fff; display: grid; place-items: center; font-weight: 700; letter-spacing: .5px; }
+  header h1 { font-size: 16px; margin: 0; font-weight: 650; }
+  header p { margin: 0; font-size: 12.5px; color: var(--muted); }
+  #status { margin-left: auto; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  #dot { width: 8px; height: 8px; border-radius: 50%; background: #c9a227; }
+  main { flex: 1; overflow-y: auto; padding: 24px 16px; }
+  .wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+  .msg { padding: 12px 15px; border-radius: 14px; max-width: 88%; white-space: normal; word-wrap: break-word; }
+  .user { align-self: flex-end; background: var(--user); color: #fff; border-bottom-right-radius: 4px; }
+  .bot { align-self: flex-start; background: var(--bot); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .bot p { margin: 0 0 8px; } .bot p:last-child { margin: 0; }
+  .bot ul { margin: 4px 0 8px; padding-left: 20px; }
+  .bot a { color: var(--accent); }
+  sup a { text-decoration: none; font-weight: 600; font-size: 11px; color: var(--gold); padding: 0 1px; }
+  .sources { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12.5px; color: var(--muted); }
+  .sources a { color: var(--muted); }
+  .sources .tag { display: inline-block; font-size: 10.5px; padding: 0 6px; border-radius: 6px;
+    background: #efe9dc; color: #6a5328; margin-right: 4px; }
+  .meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .welcome { text-align: center; color: var(--muted); padding: 30px 10px 10px; }
+  .welcome h2 { color: var(--ink); font-size: 22px; margin: 0 0 6px; font-weight: 650; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
+  .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 7px 13px;
+    cursor: pointer; font-size: 13.5px; color: var(--ink); }
+  .chip:hover { border-color: var(--accent); }
+  form { border-top: 1px solid var(--line); background: var(--panel); padding: 12px 16px; }
+  .bar { max-width: 780px; margin: 0 auto; display: flex; gap: 8px; }
+  textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px;
+    font: inherit; min-height: 46px; max-height: 140px; outline: none; background: #fff; }
+  textarea:focus { border-color: var(--accent); }
+  button.send { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px;
+    padding: 0 18px; font-weight: 600; cursor: pointer; }
+  button.send:disabled { opacity: .5; cursor: default; }
+  .typing span { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%;
+    background: var(--muted); animation: b 1s infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s } .typing span:nth-child(3) { animation-delay: .3s }
+  @keyframes b { 0%,80%,100% { opacity: .25 } 40% { opacity: 1 } }
+  footer { text-align: center; font-size: 11px; color: var(--muted); padding: 0 0 10px; background: var(--panel); }
+  [dir="rtl"] { text-align: right; }
+</style>
+</head>
+<body>
+<header>
+  <div class="mark">DG</div>
+  <div>
+    <h1>Dar Global &amp; Wasalt Assistant</h1>
+    <p>Answers from public pages on darglobal.co.uk and wasalt.sa</p>
+  </div>
+  <div id="status"><span id="dot"></span><span id="statusText">Loading…</span></div>
+</header>
+
+<main id="scroll">
+  <div class="wrap" id="chat">
+    <div class="welcome" id="welcome">
+      <h2>How can I help?</h2>
+      <div>Ask about Dar Global's projects and brand partners, or Wasalt's listings, projects and services.</div>
+      <div class="chips">
+        <button class="chip">What projects does Dar Global have in Oman?</button>
+        <button class="chip">Which luxury brands does Dar Global partner with?</button>
+        <button class="chip">Tell me about Trump International in Qatar</button>
+        <button class="chip">What is Wasalt and who owns it?</button>
+        <button class="chip">Show me villas for sale in Riyadh on Wasalt</button>
+        <button class="chip">ما هي خدمات وصلت؟</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<form id="form">
+  <div class="bar">
+    <textarea id="input" rows="1" placeholder="Ask a question…" maxlength="1000"></textarea>
+    <button class="send" id="send" type="submit">Send</button>
+  </div>
+</form>
+<footer>Independent demo built for a technical assessment. Not an official Dar Global or Wasalt service. Check details with the developer before acting on them.</footer>
+
+<script>
+const chat = document.getElementById("chat"), scroll = document.getElementById("scroll");
+const form = document.getElementById("form"), input = document.getElementById("input"), send = document.getElementById("send");
+const history = [];
+
+const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const isRtl = s => /[؀-ۿ]/.test(s);
+
+function render(md, sources) {
+  const byN = Object.fromEntries((sources || []).map(s => [s.n, s.url]));
+  let h = esc(md)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (_, nums) => nums.split(/\s*,\s*/).map(n =>
+      byN[n] ? `<sup><a href="${esc(byN[n])}" target="_blank" rel="noopener">[${n}]</a></sup>` : `[${n}]`).join(""));
+  const out = []; let list = false;
+  for (const line of h.split("\n")) {
+    const m = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
+    if (m) { if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${m[1]}</li>`); }
+    else { if (list) { out.push("</ul>"); list = false; } if (line.trim()) out.push(`<p>${line}</p>`); }
+  }
+  if (list) out.push("</ul>");
+  return out.join("");
+}
+
+function add(role, html, text) {
+  document.getElementById("welcome")?.remove();
+  const d = document.createElement("div");
+  d.className = `msg ${role}`;
+  if (text && isRtl(text)) d.dir = "rtl";
+  d.innerHTML = html;
+  chat.appendChild(d);
+  scroll.scrollTop = scroll.scrollHeight;
+  return d;
+}
+
+async function ask(q) {
+  q = q.trim(); if (!q) return;
+  add("user", esc(q), q);
+  input.value = ""; input.style.height = "";
+  send.disabled = true;
+  const pending = add("bot", '<span class="typing"><span></span><span></span><span></span></span>');
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: q, history: history.slice(-6)})
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    let html = render(data.answer, data.sources);
+    if (data.sources?.length) {
+      html += '<div class="sources"><strong>Sources</strong><br>' + data.sources.map(s =>
+        `<div>[${s.n}] <span class="tag">${esc(s.site)}</span><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title.slice(0, 90))}</a></div>`
+      ).join("") + "</div>";
+    }
+    if (data.model) html += `<div class="meta">Model: ${esc(data.model)}</div>`;
+    pending.innerHTML = html;
+    if (isRtl(data.answer)) pending.dir = "rtl";
+    history.push({role: "user", content: q}, {role: "assistant", content: data.answer});
+  } catch (e) {
+    pending.innerHTML = `<p>Sorry, something went wrong: ${esc(e.message)}</p>`;
+  } finally {
+    send.disabled = false; input.focus();
+    scroll.scrollTop = scroll.scrollHeight;
+  }
+}
+
+form.addEventListener("submit", e => { e.preventDefault(); ask(input.value); });
+input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(input.value); } });
+input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 140) + "px"; });
+document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => ask(c.textContent)));
+
+async function poll() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    const dot = document.getElementById("dot"), t = document.getElementById("statusText");
+    if (s.status === "ready") {
+      dot.style.background = "#2e8b57";
+      t.textContent = `${s.pages} pages indexed` + (s.refreshing ? " · refreshing" : "");
+    } else {
+      t.textContent = s.refreshing ? "Collecting website data…" : (s.status === "no data" ? "No data yet" : "Starting…");
+    }
+    if (s.status !== "ready" || s.refreshing) setTimeout(poll, 5000);
+  } catch { setTimeout(poll, 5000); }
+}
+poll();
+</script>
+</body>
+</html>
