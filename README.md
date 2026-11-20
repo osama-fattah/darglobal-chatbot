@@ -6,6 +6,9 @@ A chatbot that answers questions from public pages on **darglobal.co.uk** and **
 with a citation for every answer. It runs a free model through **OpenRouter**, is packaged with
 **Docker**, and is deployed on Render.
 
+**Live demo: [darglobal-assistant-c91i.onrender.com](https://darglobal-assistant-c91i.onrender.com)**
+(free tier, so the first request after a quiet spell can take up to a minute while the server wakes up)
+
 Built by Osama Abdul Fattah for the Senior AI Engineer – Agentic Systems assessment.
 
 ## How it works
