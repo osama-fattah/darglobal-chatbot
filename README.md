@@ -1,5 +1,7 @@
 # Dar Global & Wasalt Assistant
 
+[![ci](https://github.com/osama-fattah/darglobal-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/osama-fattah/darglobal-chatbot/actions/workflows/ci.yml)
+
 A chatbot that answers questions from public pages on **darglobal.co.uk** and **wasalt.sa**,
 with a citation for every answer. It runs a free model through **OpenRouter**, is packaged with
 **Docker**, and is deployed on Render.
@@ -73,6 +75,21 @@ OPENROUTER_API_KEY=... uvicorn app.main:app --port 7860
 
 Free Render services sleep after about 15 minutes without traffic, so the first request after
 a pause can take up to a minute.
+
+## Tests
+
+The test suite runs offline, so it needs no API key and makes no network calls. It uses small
+synthetic pages, a BM25-only index, and a mocked OpenRouter transport.
+
+```bash
+pip install -r requirements.txt pytest pytest-cov ruff
+ruff check . && pytest -q --cov=app
+```
+
+It covers page extraction (including `__NEXT_DATA__` listing fields), chunking, hybrid search
+(site filter, two-passages-per-page cap), routing and follow-ups, the widen-to-both-sites
+fallback, and the model client's free-model ranking, retry on 429, and skipping of truncated
+answers. CI runs the same commands on every push.
 
 ## Configuration
 
